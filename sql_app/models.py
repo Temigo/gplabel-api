@@ -86,7 +86,7 @@ class Session(Base):
     __tablename__ = "sessions"
 
     id           = Column(Integer, primary_key=True, index=True)
-    expires      = Column(Date)
+    expires      = Column(DateTime)
     sessionToken = Column(String, index=True)
     userId       = Column(Integer, ForeignKey("users.id"))
 

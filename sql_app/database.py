@@ -1,8 +1,10 @@
-from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import create_engine, inspect
+from sqlalchemy.ext.declarative import declarative_base, as_declarative
 from sqlalchemy.orm import sessionmaker
 
-SQLALCHEMY_DATABASE_URL = "sqlite:///./sql_app.db"
+# This will be used in root `main.py` file, path needs to be relative
+# to the root folder.
+SQLALCHEMY_DATABASE_URL = "sqlite:///./sql_app/sql_app.db"
 # SQLALCHEMY_DATABASE_URL = "postgresql://user:password@postgresserver/db"
 
 engine = create_engine(
@@ -10,4 +12,9 @@ engine = create_engine(
 )
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-Base = declarative_base()
+#Base = declarative_base()
+@as_declarative()
+class Base:
+    def _asdict(self):
+        return {c.key: getattr(self, c.key)
+                for c in inspect(self).mapper.column_attrs}
