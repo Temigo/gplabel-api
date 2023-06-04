@@ -1,19 +1,36 @@
 from fastapi import FastAPI, status, Depends, HTTPException
+from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
+
 from pydantic import BaseModel
 
 from sql_app import schemas, crud
 from sql_app.main import get_db
 from sqlalchemy.orm import Session
 from typing import List
+
 import logging
 logging.basicConfig(level=logging.DEBUG)
 log = logging.getLogger("foo")
 log.debug("test")
+
 app = FastAPI(
     title="GP Label API",
     version="0.0.1"
 )
 
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost",
+        "http://localhost:3000"
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get("/")
 def get_root():
