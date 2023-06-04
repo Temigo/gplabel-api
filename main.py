@@ -7,7 +7,7 @@ from pydantic import BaseModel
 from sql_app import schemas, crud
 from sql_app.main import get_db
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Union
 
 import logging
 logging.basicConfig(level=logging.DEBUG)
@@ -46,6 +46,16 @@ def get_annotation(id: int, db: Session = Depends(get_db)):
     if db_anno is None:
         raise HTTPException(status_code=404, detail='Annotation not found')
     return db_anno
+
+@app.get("/annotation/", response_model=List[schemas.Annotation])
+def get_annotation_by_user_image(user_id: int, image_id: int, db: Session = Depends(get_db)):
+    #log.debug("get annotation by user image length is %d" % len(crud.get_annotation_by_user_image(db, user_id, image_id)))
+    return crud.get_annotation_by_user_image(db, user_id, image_id)
+
+@app.post("/annotation/save/", response_model=List[schemas.Annotation], status_code=status.HTTP_201_CREATED)
+def save_annotation(annotations: schemas.AnnotationList, user_id: int = -1, image_id: int = -1, db: Session = Depends(get_db)):
+    #log.debug("saving annotations", len(annotations.data), [x.user_id for x in annotations.data], [x.image_id for x in annotations.data])
+    return crud.save_annotations(db, annotations.data, user_id, image_id)
 
 @app.post("/annotation/new", response_model=schemas.Annotation, status_code=status.HTTP_201_CREATED)
 def post_annotation(annotation: schemas.AnnotationBase, db: Session = Depends(get_db)):

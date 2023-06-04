@@ -20,6 +20,9 @@ class AnnotationBase(BaseModel):
 class Annotation(AnnotationBase):
     id: int
 
+class AnnotationList(BaseModel):
+    data: List[Union[AnnotationBase, Annotation]]
+
 class Image(BaseModel):
     id: int
     filename: str
@@ -72,7 +75,7 @@ class AccountBase(BaseModel):
 # To read account
 class Account(AccountBase):
     id: int
-    user: User
+    user: UserOut
 
 # To create session
 class SessionBase(BaseModel):
@@ -86,7 +89,7 @@ class SessionBase(BaseModel):
 # To read session
 class Session(SessionBase):
     id: int
-    user: User
+    user: UserOut
 
 class VerificationToken(BaseModel):
     identifier: int

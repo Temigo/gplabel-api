@@ -1,8 +1,8 @@
-"""change field Session.expires from date to datetime
+"""Fix cascading constraint
 
-Revision ID: abadead563a7
-Revises: d8d9e5a51799
-Create Date: 2023-06-03 17:36:18.614207
+Revision ID: 0a7344a58ce8
+Revises: f822ab1c6bd6
+Create Date: 2023-06-04 09:57:36.045644
 
 """
 from alembic import op
@@ -10,8 +10,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'abadead563a7'
-down_revision = 'd8d9e5a51799'
+revision = '0a7344a58ce8'
+down_revision = 'f822ab1c6bd6'
 branch_labels = None
 depends_on = None
 

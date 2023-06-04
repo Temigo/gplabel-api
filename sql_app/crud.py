@@ -1,6 +1,11 @@
 from sqlalchemy.orm import Session
-
+from typing import List, Union
 from . import models, schemas
+import numpy as np
+
+import logging
+logging.basicConfig(level=logging.DEBUG)
+log = logging.getLogger("crud")
 
 #
 # User
@@ -47,12 +52,52 @@ def get_image(db: Session, image_id: int):
 def get_annotation(db: Session, annotation_id: int):
     return db.query(models.Annotation).filter(models.Annotation.id == annotation_id).first()
 
+def get_annotation_by_user_image(db: Session, userId: int, imageId: int):
+    return db.query(models.Annotation).filter(
+        (models.Annotation.user_id == userId) and (models.Annotation.image_id == imageId)
+    ).all()
+
 def create_annotation(db: Session, annotation: schemas.AnnotationBase):
     db_anno = models.Annotation(**annotation.dict())
     db.add(db_anno)
     db.commit()
     db.refresh(db_anno)
     return db_anno
+
+def update_annotation(db: Session, annotation: schemas.Annotation):
+    db_anno = db.query(models.Annotation).filter(models.Annotation.id == annotation_id)
+    db_anno.update(**annotation.dict())
+    db.commit()
+    db_anno = db_anno.first()
+    db.refresh(db_anno)
+    return annotation
+
+def delete_annotation_by_user_image(db: Session, userId: int, imageId: int):
+    db.query(models.Annotation).filter(
+        (models.Annotation.user_id == userId) and (models.Annotation.image_id == imageId)
+    ).delete()
+    db.commit()
+
+def save_annotations(db: Session,
+                    annotations: List[Union[schemas.AnnotationBase, schemas.Annotation]],
+                    user_id: int = -1,
+                    image_id: int = -1):
+    """
+    Same as create_annotation but for a list.
+    """
+    if len(annotations) == 0:
+        if user_id >= 0 and image_id >= 0:
+            delete_annotation_by_user_image(db, user_id, image_id)
+        return []
+    userId = np.unique([x.user_id for x in annotations])
+    imageId = np.unique([x.image_id for x in annotations])
+    assert len(userId) == 1
+    assert len(imageId) == 1
+    userId = int(userId[0])
+    imageId = int(imageId[0])
+
+    delete_annotation_by_user_image(db, userId, imageId)
+    return [create_annotation(db, x) for x in annotations]
 
 #
 # Account

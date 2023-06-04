@@ -1,5 +1,5 @@
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Float, Table, DateTime, Date
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, backref
 
 from .database import Base
 
@@ -7,8 +7,8 @@ from .database import Base
 association_table = Table(
     "association_table",
     Base.metadata,
-    Column("left_id", ForeignKey("users.id"), primary_key=True),
-    Column("right_id", ForeignKey("images.id"), primary_key=True)
+    Column("left_id", ForeignKey("users.id", ondelete="CASCADE", onupdate="CASCADE"), primary_key=True),
+    Column("right_id", ForeignKey("images.id", ondelete="CASCADE", onupdate="CASCADE"), primary_key=True)
 )
 
 class User(Base):
@@ -24,10 +24,10 @@ class User(Base):
     emailVerified = Column(Date)
     image         = Column(String)
 
-    images      = relationship("Image", secondary=association_table, back_populates="annotators")
-    annotations = relationship("Annotation", back_populates="user")
-    accounts    = relationship("Account", back_populates="user")
-    sessions    = relationship("Session", back_populates="user")
+    images      = relationship("Image", secondary=association_table, back_populates="annotators", cascade="all")
+    #annotations = relationship("Annotation", back_populates="user", cascade="all")
+    #accounts    = relationship("Account", back_populates="user", cascade="all, delete-orphan")
+    #sessions    = relationship("Session", back_populates="user", cascade="all, delete-orphan")
 
 class Image(Base):
     """
@@ -39,15 +39,16 @@ class Image(Base):
     filename = Column(String)
     frame    = Column(Integer)
 
-    annotators  = relationship("User", secondary=association_table, back_populates="images")
-    annotations = relationship("Annotation", back_populates="image")
+    annotators  = relationship("User", secondary=association_table,
+                                back_populates="images", cascade="all")
+    #annotations = relationship("Annotation", back_populates="image", cascade="all")
 
 class Annotation(Base):
     __tablename__ = "annotations"
 
     id        = Column(Integer, primary_key=True, index=True)
-    image_id  = Column(Integer, ForeignKey("images.id"))
-    user_id   = Column(Integer, ForeignKey("users.id"))
+    image_id  = Column(Integer, ForeignKey("images.id", ondelete="CASCADE", onupdate="CASCADE"))
+    user_id   = Column(Integer, ForeignKey("users.id", ondelete="CASCADE", onupdate="CASCADE"))
     x         = Column(Float)
     y         = Column(Float)
     width     = Column(Float)
@@ -55,8 +56,8 @@ class Annotation(Base):
     label     = Column(String)
     timestamp = Column(DateTime)
 
-    image = relationship("Image", back_populates="annotations")
-    user  = relationship("User", back_populates="annotations")
+    image = relationship("Image", backref=backref("annotations", cascade="all"))
+    user  = relationship("User", backref=backref("annotations", cascade="all"))
 
 class Account(Base):
     """
@@ -65,7 +66,7 @@ class Account(Base):
     __tablename__ = "accounts"
 
     id                = Column(Integer, primary_key=True, index=True)
-    userId            = Column(Integer, ForeignKey("users.id"))
+    userId            = Column(Integer, ForeignKey("users.id", ondelete="CASCADE", onupdate="CASCADE"))
     type              = Column(String)
     provider          = Column(String)
     providerAccountId = Column(String)
@@ -77,7 +78,7 @@ class Account(Base):
     id_token          = Column(String)
     session_state     = Column(String)
 
-    user = relationship("User", back_populates="accounts")
+    user = relationship("User", backref=backref("accounts", cascade="all"))
 
 class Session(Base):
     """
@@ -88,9 +89,9 @@ class Session(Base):
     id           = Column(Integer, primary_key=True, index=True)
     expires      = Column(DateTime)
     sessionToken = Column(String, index=True)
-    userId       = Column(Integer, ForeignKey("users.id"))
+    userId       = Column(Integer, ForeignKey("users.id", ondelete="CASCADE", onupdate="CASCADE"))
 
-    user = relationship("User", back_populates="sessions")
+    user = relationship("User", backref=backref("sessions", cascade="all"))
 
 class VerificationToken(Base):
     __tablename__ = "verificationTokens"
