@@ -13,3 +13,6 @@ def get_db():
         yield db
     finally:
         db.close()
+        # See https://github.com/sqlalchemy/sqlalchemy/discussions/9167
+        # and https://github.com/sqlalchemy/sqlalchemy/discussions/9188
+        engine.dispose()

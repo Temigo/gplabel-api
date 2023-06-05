@@ -4,7 +4,8 @@ from sqlalchemy.orm import sessionmaker
 
 # This will be used in root `main.py` file, path needs to be relative
 # to the root folder.
-SQLALCHEMY_DATABASE_URL = "sqlite:///./sql_app/sql_app.db"
+import os
+SQLALCHEMY_DATABASE_URL = os.getenv("SQL_URL", "sqlite:///./sql_app/sql_app.db")
 # SQLALCHEMY_DATABASE_URL = "postgresql://user:password@postgresserver/db"
 
 engine = create_engine(
